@@ -10,6 +10,13 @@ let notes = [
   { id: 2, content: 'Second note', complete: '0' }
 ];
 
+app.put("/notes/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const noteIndex = notes.findIndex(note => note.id === id);
+    notes[noteIndex] = { ...notes[noteIndex], ...req.body} // spread operator (...) to update only the fields sent in the request body
+    console.log('Note updated:', notes[noteIndex]);
+});
+
 app.post('/notes', (req, res) => {
     const newNote = {
         id: notes.length + 1,
@@ -29,6 +36,16 @@ app.get('/notes/info', (req, res) => {
 
 app.get('/notes/list', (req, res) => {
     res.json(notes);
+});
+
+app.get('/notes/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const note = notes.filter(note => note.id === id);
+    if (note.length > 0){
+        res.json(note[0]); // '0' cause filter returns an array
+    }else{
+        res.status(404).end();
+    }
 });
 
 app.get('/', (req, res) => {
