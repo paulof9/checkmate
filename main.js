@@ -10,6 +10,13 @@ let notes = [
   { id: 2, content: 'Second note', complete: '0' }
 ];
 
+app.delete('/notes/:id', (req, res) => {
+    const id = Number(req.params.id);
+    notes = notes.filter(note => note.id !== id);
+    console.log(`Note with id ${id} deleted.`);
+
+});
+
 app.put("/notes/:id", (req, res) => {
     const id = Number(req.params.id);
     const noteIndex = notes.findIndex(note => note.id === id);
