@@ -31,14 +31,6 @@ export default function front() {
             }
         }
     });
-
-    /*if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            clearRes();
-            showNotes();
-        });
-    }*/
 }
 
 //SHOW ALL NOTES
@@ -59,7 +51,7 @@ async function showNotes() {
         const p = document.createElement('p');
         p.textContent = `Error: ${err.message}`;
         resDiv.appendChild(p);
-        console.error(error);
+        console.error(err);
     }
 }
 
