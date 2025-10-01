@@ -14,3 +14,5 @@ Roadmap atm:
 - [ ] BASH
   - [ ] SSH link
   - [ ] be an real CLI
+
+- [ ] then migrate to React
