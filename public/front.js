@@ -22,12 +22,17 @@ export default function front() {
         if (e.key === "Enter") {
             e.preventDefault();
             const cmd = input.value.trim().toLowerCase();
-            if(cmd === "note list"){
-                showNotesList();
+            const raw = input.value.trim();
+
+            if(cmd === "notes"){
+                showNotes();
+
             }else if(cmd === "clear"){
                 clearRes();
+
             }else if(cmd === "note info"){
                 showInfo();
+
             }else if(cmd.startsWith("note show ")){
                 const id = cmd.split(" ")[2];
                 if(!isNaN(id)){
@@ -35,6 +40,36 @@ export default function front() {
                 }else{
                     showError('Invalid ID.');
                 }
+
+            }else if(cmd.startsWith("note edit ")){
+                // parse: note edit <id> <new content> [--c to mark as complete]
+                const parts = raw.split(" "); // ["note", "edit", "<id>", "<new content>", "[--c]"]
+                const id = parts[2]; // get the position, in this case <id>
+                if(isNaN(Number(id))){
+                    showError('Invalid ID.');
+                    return;
+                }
+
+                // all parts after the id as new content
+                let content = parts.slice(3).join(" ").trim(); // join all parts after the id as new content
+                if (!content) {
+                        showError('Usage: note edit <id> <new content> [--c to mark as complete/--uc to mark as uncomplete]');
+                        return;
+                    }
+
+                const m = content.match(/(.*?)\s*--c\s*$/i);
+                let complete;
+                    if (m) {
+                        content = m[1].trim(); // with the flag
+                        complete = 1;
+                    }
+                const unm = content.match(/(.*?)\s*--uc\s*$/i);
+                    if (unm) {
+                        content = unm[1].trim(); // without the flag
+                        complete = 0;
+                    }
+                showUpdate(id, content, complete);
+                return;
             }else{
                 showError('Invalid command.');
             }
@@ -43,10 +78,10 @@ export default function front() {
 }
 
 //SHOW ALL NOTES
-async function showNotesList() {
+async function showNotes() {
     const resDiv = document.getElementById('resDiv');
     try {
-        const res = await fetch('http://localhost:3000/notes/list');
+        const res = await fetch('/notes');
         const notes = await res.json();
         console.log(notes);
 
@@ -68,7 +103,7 @@ async function showNotesList() {
 async function showInfo(){
     const resDiv = document.getElementById('resDiv');
     try {
-        const res = await fetch('http://localhost:3000/notes/info');
+        const res = await fetch('/notes/info');
         const info = await res.json();
         console.log(info);
 
@@ -87,7 +122,7 @@ async function showInfo(){
 async function showNoteById(id) {
     const resDiv = document.getElementById('resDiv');
     try{
-        const res = await fetch(`http://localhost:3000/notes/${id}`);
+        const res = await fetch(`/notes/${id}`);
         const noteId = await res.json();
         console.log(noteId);
 
@@ -103,6 +138,26 @@ async function showNoteById(id) {
     }
 };
 
+//SHOW UPDATE
+async function showUpdate(id, newContent, complete){
+    const resDiv = document.getElementById('resDiv');
+    try{
+        const res = await fetch(`/notes/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: newContent })
+        });
 
+        const updatedNote = await res.json();
+        const p = document.createElement('p');
+        p.textContent = `Note updated: [${updatedNote.id}]: ${updatedNote.content} (complete: ${updatedNote.complete === '1' ? 'y' : 'n'})`;
+        resDiv.appendChild(p);
+    }catch(err){
+        const p = document.createElement('p');
+        p.textContent = `Error: ${err.message}`;
+        resDiv.appendChild(p);
+        console.error(err);
+    }
+};
 
 front();
