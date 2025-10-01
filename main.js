@@ -20,57 +20,69 @@ let notes = [
 //DELETE
 app.delete('/notes/:id', (req, res) => {
     const id = Number(req.params.id);
+    const beforeLength = notes.length;
     notes = notes.filter(note => note.id !== id); // filter to remove the note, all other notes remain except the requested one
+    // verify if note has been deleted by the total of notes
+    if (notes.length === beforeLength) {
+        return res.status(404).json({ error: 'Not found' });
+    }
     console.log(`Note with id ${id} deleted.`);
-
+    return res.status(204).end();
 });
 
 //UPDATE
 app.put("/notes/:id", (req, res) => {
     const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
     const noteIndex = notes.findIndex(note => note.id === id);
+    if (noteIndex === -1) return res.status(404).json({ error: "Note not found" });
     notes[noteIndex] = { ...notes[noteIndex], ...req.body} // spread operator (...) to update only the fields sent in the request body
     console.log('Note updated:', notes[noteIndex]);
+    return res.json(notes[noteIndex]);
 });
 
 //CREATE
 app.post('/notes', (req, res) => {
-    const newNote = {
-        id: notes.length + 1,
-        ...req.body,
-        complete: '0'
+    if (!req.body.content || req.body.content.trim() === '') {
+      return res.status(400).json({ error: 'Content is required' });  
     };
+    const nextId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) +1 : 1; //map to rewrite
+    const newNote = { id: nextId, ...req.body, complete: '0' }; // new notes are incomplete by default
     notes.push(newNote);
-    res.json({ content: newNote });
     console.log('New note added:', newNote);
+    // only res.status(201).json(newNote) will work too, but location is a good practice!
+    return res.status(201).location(`/notes/${newNote.id}`).json(newNote);
 });
 
 //READ INFO
 app.get('/notes/info', (req, res) => {
     const totalNotes = notes.length;
     const completeNotes = notes.filter(note => note.complete === '1'); // note is the index 'i'
-    res.json({ total: totalNotes, complete: completeNotes.length });
+    return res.status(200).json({ total: totalNotes, complete: completeNotes.length });
 });
 
 //READ ALL
-app.get('/notes/list', (req, res) => {
-    res.json(notes);
+app.get('/notes', (req, res) => {
+    return res.status(200).json(notes);
 });
 
 //READ ONE
 app.get('/notes/:id', (req, res) => {
     const id = Number(req.params.id);
-    const note = notes.filter(note => note.id === id);
-    if (note.length > 0){
-        res.json(note[0]); // '0' cause filter returns an array
+    const note = notes.find(note => note.id === id);
+    // lets use find cause /notes/1 should return one object, not an array
+    if (note){
+        return res.status(200).json(note); // '0' cause filter returns an array
     }else{
-        res.status(404).end();
+        return res.status(404).json({ error: 'Not found' });
     }
 });
 
 // MAIN PAGE ROUTE
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+    // this one is adapted to ESM modules i searched
+    return res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+  //res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
