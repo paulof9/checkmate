@@ -23,9 +23,18 @@ export default function front() {
             e.preventDefault();
             const cmd = input.value.trim().toLowerCase();
             if(cmd === "note list"){
-                showNotes();
+                showNotesList();
             }else if(cmd === "clear"){
                 clearRes();
+            }else if(cmd === "note info"){
+                showInfo();
+            }else if(cmd.startsWith("note show ")){
+                const id = cmd.split(" ")[2];
+                if(!isNaN(id)){
+                    showNoteById(id);
+                }else{
+                    showError('Invalid ID.');
+                }
             }else{
                 showError('Invalid command.');
             }
@@ -34,7 +43,7 @@ export default function front() {
 }
 
 //SHOW ALL NOTES
-async function showNotes() {
+async function showNotesList() {
     const resDiv = document.getElementById('resDiv');
     try {
         const res = await fetch('http://localhost:3000/notes/list');
@@ -54,5 +63,46 @@ async function showNotes() {
         console.error(err);
     }
 }
+
+//SHOW INFO (total and completed notes)
+async function showInfo(){
+    const resDiv = document.getElementById('resDiv');
+    try {
+        const res = await fetch('http://localhost:3000/notes/info');
+        const info = await res.json();
+        console.log(info);
+
+        const p = document.createElement('p');
+        p.textContent = `Total: ${info.total}, Complete: ${info.complete}`;
+        resDiv.appendChild(p);
+    }catch(err){
+        const p = document.createElement('p');
+        p.textContent = `Error: ${err.message}`;
+        resDiv.appendChild(p);
+        console.error(err);
+    };
+};
+
+//SHOW NOTE BY ID
+async function showNoteById(id) {
+    const resDiv = document.getElementById('resDiv');
+    try{
+        const res = await fetch(`http://localhost:3000/notes/${id}`);
+        const noteId = await res.json();
+        console.log(noteId);
+
+        const complete = (noteId.complete === 0 || noteId.complete === '0') ? 'n' : 'y';
+        const p = document.createElement('p');
+        p.textContent = `[${noteId.id}]: ${noteId.content} (complete: ${complete})`;
+        resDiv.appendChild(p);
+    }catch(err){
+        const p = document.createElement('p');
+        p.textContent = `Error: invalid id or not found.`;
+        resDiv.appendChild(p);
+        console.error(err);
+    }
+};
+
+
 
 front();
