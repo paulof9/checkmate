@@ -1,6 +1,12 @@
 import express from 'express';
+import cors from 'cors';
+import path from 'path';
+
 const app = express();
 const PORT = 3000;
+
+app.use(cors());
+app.use(express.static('public'))
 
 // middleware to interpret express JSON
 app.use(express.json());
@@ -64,7 +70,7 @@ app.get('/notes/:id', (req, res) => {
 
 // MAIN PAGE ROUTE
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
