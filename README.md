@@ -1,35 +1,40 @@
-## This is an experimental and study repo. 
+## This is an experimental study repo. 
 
 ## Endpoints (RESTful)
 - GET  /notes          — list notes
-- GET  /notes/:id      — get notes
+- GET  /notes/:id      — get notes by id
 - POST /notes          — create note (body: { content })
-- PUT  /notes/:id      — update note (body: { content, complete })
-- DELETE /notes/:id    — delete note
-- GET  /notes/info     — stats (total, complete)
+- PUT  /notes/:id      — update a note (body: { content, complete })
+- DELETE /notes/:id    — delete a note
+- GET  /notes/info     — get stats (total, complete)
+
+### Modules
+- notesModel.js → array and basic functions (create, list, delete).
+- notesController.js  → handle req/res and call model functions.
+- notes.js (route) → connect Express routes to controllers.
+- server.js → just set up the app, apply middlewares and import routes.
+> This part is the most complicated for me 
 
 ## Commands (frontend)
 - note list                             — show all notes
-- note show <id>                        — show notes by id
+- note show <id>                        — show note by id
 - note <content>                        — create new note
-- note edit <id> <content> [--c|--uc]   — updates content or if is completed
-- note remove <id> [--a]                — removes note by id or all notes (--a)
+- note edit <id> <content> [--c|--uc]   — update note content or or change status
+- note remove <id> [--a]                — remove a note by id or all notes with "--a"
 - note info                             — show stats (total, complete)
-- clear                                 — clean screen
+- clear                                 — clear screen
 
 ## Roadmap atm:
-- [ ] API
+- [X] API
   - [x] CRUD ROUTES
-  - [X] add res.status codes
-  - [ ] Refactor
-  - [ ] be modular
-- [ ] FRONTEND
-  - [x] add all commands
-  - [ ] implement history message nav with key arrows
-  - [ ] be modular
-  - [ ] Be elegant
+  - [X] Add res.status codes
+  - [X] Refactor
+  - [X] Be modular
+- [X] FRONTEND
+  - [x] Add all commands
+  - [ ] Implement history message nav with key arrows
+  - [ ] Be modular
+  - [ ] Improve design
 - [ ] BASH
   - [ ] SSH link
-  - [ ] be an real CLI
-
-- [ ] then migrate to React
+  - [ ] Be a real CLI
