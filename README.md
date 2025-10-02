@@ -3,7 +3,7 @@ This is an experimental and study repo.
 Roadmap atm:
 - [ ] API
   - [x] CRUD ROUTES
-  - [ ] add res.status codes
+  - [X] add res.status codes
   - [ ] Refactor
   - [ ] be modular
 - [ ] FRONTEND
