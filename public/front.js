@@ -14,6 +14,7 @@ export default function front() {
         const resDiv = document.getElementById('resDiv');
         const p = document.createElement('p');
         p.textContent = `Error: ${message}`;
+        p.style.color = '#ff2626ff';
         resDiv.appendChild(p);
     }
 
@@ -31,13 +32,12 @@ export default function front() {
 
             }else if(cmd === "clear"){
                 clearRes();
-
             }else if(cmd === "note info"){
                 showInfo();
 
             }else if(cmd.startsWith("note show ")){
                 const id = cmd.split(" ")[2];
-                if(!isNaN(id)){
+                if(!Number.isNaN(Number(id))){
                     showNoteById(id);
                 }else{
                     showError('Invalid ID.');
@@ -47,7 +47,7 @@ export default function front() {
                 // parse: note edit <id> <new content> [--c to mark as complete]
                 const parts = raw.split(" "); // ["note", "edit", "<id>", "<new content>", "[--c]"]
                 const id = parts[2]; // get the position, in this case <id>
-                if(isNaN(Number(id))){
+                if(Number.isNaN(Number(id))){
                     showError('Invalid ID.');
                     return;
                 }
@@ -59,31 +59,26 @@ export default function front() {
                         return;
                     }
 
-                const m = content.match(/(.*?)\s*--c\s*$/i);
+                // check for --c or --uc flags at the end of the content
                 let complete;
-                    if (m) {
-                        content = m[1].trim(); // with the flag
-                        complete = 1;
-                    }
+                const m = content.match(/(.*?)\s*--c\s*$/i);
+                if (m) { content = m[1].trim(); complete = 1; }
+
                 const unm = content.match(/(.*?)\s*--uc\s*$/i);
-                    if (unm) {
-                        content = unm[1].trim(); // without the flag
-                        complete = 0;
-                    }
+                if (unm) { content = unm[1].trim(); complete = 0; }
+
                 showUpdate(id, content, complete);
                 return;
             
             }else if(cmd.startsWith("note remove ")){
-                const id = cmd.split(" ")[2];
-                if(!isNaN(id)){
-                    deleteNote(id);
-                }else if(id === '--a'){
+                const arg = raw.split(" ")[2];
+                if (arg === '--a') {
                     deleteAllNotes();
-                }else if(id !== '--a' || isNaN(id)){
+                } else if (!Number.isNaN(Number(arg))) {
+                    deleteNote(arg);
+                } else {
                     showError('Usage: note remove <id> or note remove --a to delete all notes');
-                }else{
-                    showError('Invalid ID.');
-            }
+                }
             }else if(cmd.startsWith("note ")){
                     const content = raw.substring(5).trim(); // get everything after "note "
                     if(!content){
@@ -105,6 +100,10 @@ async function showNotes() {
     const resDiv = document.getElementById('resDiv');
     try {
         const res = await fetch('/notes');
+        if (!res.ok) {
+            const err = await res.json().catch(() => null);
+            throw new Error(err && err.error ? err.error : `Server returned ${res.status}`);
+        }
         const notes = await res.json();
         console.log(notes);
 
@@ -117,6 +116,7 @@ async function showNotes() {
     } catch (err) {
         const p = document.createElement('p');
         p.textContent = `Error: ${err.message}`;
+        p.style.color = '#ff2626ff';
         resDiv.appendChild(p);
         console.error(err);
     }
@@ -127,6 +127,10 @@ async function showInfo(){
     const resDiv = document.getElementById('resDiv');
     try {
         const res = await fetch('/notes/info');
+        if (!res.ok) {
+            const err = await res.json().catch(() => null);
+            throw new Error(err && err.error ? err.error : `Server returned ${res.status}`);
+        }
         const info = await res.json();
         console.log(info);
 
@@ -136,6 +140,7 @@ async function showInfo(){
     }catch(err){
         const p = document.createElement('p');
         p.textContent = `Error: ${err.message}`;
+        p.style.color = '#ff2626ff';
         resDiv.appendChild(p);
         console.error(err);
     };
@@ -146,6 +151,17 @@ async function showNoteById(id) {
     const resDiv = document.getElementById('resDiv');
     try{
         const res = await fetch(`/notes/${id}`);
+        if (!res.ok) {
+            if (res.status === 404) {
+                const p = document.createElement('p');
+                p.textContent = 'Not found.';
+                p.style.color = '#ff2626ff';
+                resDiv.appendChild(p);
+                return;
+            }
+            const err = await res.json().catch(() => null);
+            throw new Error(err && err.error ? err.error : `Server returned ${res.status}`);
+        }
         const noteId = await res.json();
         console.log(noteId);
 
@@ -155,7 +171,8 @@ async function showNoteById(id) {
         resDiv.appendChild(p);
     }catch(err){
         const p = document.createElement('p');
-        p.textContent = `Error: invalid id or not found.`;
+        p.textContent = `Error: ${err.message}`;
+        p.style.color = '#ff2626ff';
         resDiv.appendChild(p);
         console.error(err);
     }
@@ -168,8 +185,18 @@ async function showUpdate(id, newContent, complete){
         const res = await fetch(`/notes/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: newContent })
+            body: JSON.stringify({ content: newContent, complete })
         });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => null);
+            resDiv.innerHTML = '';
+            const p = document.createElement('p');
+            p.textContent = err && err.error ? err.error : `Failed (status ${res.status})`;
+            p.style.color = '#ff2626ff';
+            resDiv.appendChild(p);
+            return;
+        }
 
         const updatedNote = await res.json();
         const p = document.createElement('p');
@@ -178,35 +205,15 @@ async function showUpdate(id, newContent, complete){
     }catch(err){
         const p = document.createElement('p');
         p.textContent = `Error: ${err.message}`;
+        p.style.color = '#ff2626ff';
         resDiv.appendChild(p);
         console.error(err);
     }
 };
 
-// NEW NOTE
-async function newNote(content){
-    const resDiv = document.getElementById('resDiv');
-    try{
-        // specify method, headers and body to send JSON data correctly
-        const res = await fetch('/notes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: content })
-        });
-        const addedNote = await res.json();
-        const p = document.createElement('p');
-        p.textContent = `New note added: [${addedNote.id}]: ${addedNote.content} (complete: ${addedNote.complete === '1' ? 'y' : 'n'})`;
-        resDiv.appendChild(p);
-    }catch(err){
-        const p = document.createElement('p');
-        p.textContent = `Error: ${err.message}`;
-        resDiv.appendChild(p);
-        console.error(err);
-    }
-}
-
 // DELETE NOTE
 async function deleteNote(id){
+    const resDiv = document.getElementById('resDiv');
     try{
         const res = await fetch(`/notes/${id}`, { method: 'DELETE' });
         if(res.status === 204){
@@ -215,9 +222,17 @@ async function deleteNote(id){
             resDiv.appendChild(p);
             return;
         }
+        // non-204: try to read error body
+        const err = await res.json().catch(() => null);
+        resDiv.innerHTML = '';
+        const p = document.createElement('p');
+        p.textContent = err && err.error ? err.error : `Failed to delete (status ${res.status})`;
+        p.style.color = '#ff2626ff';
+        resDiv.appendChild(p);
     }catch(err){
         const p = document.createElement('p');
         p.textContent = `Error: ${err.message}`;
+        p.style.color = '#ff2626ff';
         resDiv.appendChild(p);
         console.error(err);
     }
@@ -232,10 +247,50 @@ async function deleteAllNotes() {
             const p = document.createElement('p');
             p.textContent = 'All notes deleted.';
             resDiv.appendChild(p);
+            return;
         }
+        const err = await res.json().catch(() => null);
+        resDiv.innerHTML = '';
+        const p = document.createElement('p');
+        p.textContent = err && err.error ? err.error : `Failed to delete all (status ${res.status})`;
+        p.style.color = '#ff2626ff';
+        resDiv.appendChild(p);
     } catch (err) {
         const p = document.createElement('p');
         p.textContent = `Error: ${err.message}`;
+        p.style.color = '#ff2626ff';
+        resDiv.appendChild(p);
+        console.error(err);
+    }
+}
+
+// NEW NOTE
+async function newNote(content){
+    const resDiv = document.getElementById('resDiv');
+    try{
+        // specify method, headers and body to send JSON data correctly
+        const res = await fetch('/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: content })
+        });
+        if (!res.ok && res.status !== 201) {
+            const err = await res.json().catch(() => null);
+            resDiv.innerHTML = '';
+            const p = document.createElement('p');
+            p.textContent = err && err.error ? err.error : `Failed (status ${res.status})`;
+            p.style.color = '#ff2626ff';
+            resDiv.appendChild(p);
+            return;
+        }
+        const addedNote = await res.json();
+        const p = document.createElement('p');
+        p.textContent = `New note added: [${addedNote.id}]: ${addedNote.content} (complete: ${addedNote.complete === '1' ? 'y' : 'n'})`;
+        resDiv.appendChild(p);
+    }catch(err){
+        const p = document.createElement('p');
+        p.textContent = `Error: ${err.message}`;
+        p.style.color = '#ff2626ff';
         resDiv.appendChild(p);
         console.error(err);
     }
