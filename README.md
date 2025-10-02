@@ -7,7 +7,7 @@ Roadmap atm:
   - [ ] Refactor
   - [ ] be modular
 - [ ] FRONTEND
-  - [ ] add all commands
+  - [x] add all commands
   - [ ] implement history message nav with key arrows
   - [ ] be modular
   - [ ] Be elegant
