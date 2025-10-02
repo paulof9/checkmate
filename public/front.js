@@ -25,7 +25,7 @@ export default function front() {
             const raw = input.value.trim();
             input.value = '';
             input.focus();
-            
+
             if(cmd === "note list"){
                 showNotes();
 
@@ -77,6 +77,10 @@ export default function front() {
                 const id = cmd.split(" ")[2];
                 if(!isNaN(id)){
                     deleteNote(id);
+                }else if(id === '--a'){
+                    deleteAllNotes();
+                }else if(id !== '--a' || isNaN(id)){
+                    showError('Usage: note remove <id> or note remove --a to delete all notes');
                 }else{
                     showError('Invalid ID.');
             }
@@ -212,6 +216,24 @@ async function deleteNote(id){
             return;
         }
     }catch(err){
+        const p = document.createElement('p');
+        p.textContent = `Error: ${err.message}`;
+        resDiv.appendChild(p);
+        console.error(err);
+    }
+}
+
+// DELETE ALL NOTES
+async function deleteAllNotes() {
+    const resDiv = document.getElementById('resDiv');
+    try {
+        const res = await fetch('/notes', { method: 'DELETE' });
+        if (res.status === 204) {
+            const p = document.createElement('p');
+            p.textContent = 'All notes deleted.';
+            resDiv.appendChild(p);
+        }
+    } catch (err) {
         const p = document.createElement('p');
         p.textContent = `Error: ${err.message}`;
         resDiv.appendChild(p);

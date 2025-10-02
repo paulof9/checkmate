@@ -17,7 +17,14 @@ let notes = [
   { id: 2, content: 'Second note', complete: '0' }
 ];
 
-//DELETE
+// DELETE ALL NOTES
+app.delete('/notes', (req, res) => {
+  notes = [];
+  console.log('All notes deleted.');
+  return res.status(204).end(); // No Content
+});
+
+//DELETE BY ID
 app.delete('/notes/:id', (req, res) => {
     const id = Number(req.params.id);
     const beforeLength = notes.length;

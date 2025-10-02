@@ -13,7 +13,7 @@
 - note show <id>                        — show notes by id
 - note <content>                        — create new note
 - note edit <id> <content> [--c|--uc]   — updates content or if is completed
-- note remove <id>                      — removes note by id
+- note remove <id> [--a]                — removes note by id or all notes (--a)
 - note info                             — show stats (total, complete)
 - clear                                 — clean screen
 
