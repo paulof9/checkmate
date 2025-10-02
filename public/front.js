@@ -200,7 +200,8 @@ async function showUpdate(id, newContent, complete){
 
         const updatedNote = await res.json();
         const p = document.createElement('p');
-        p.textContent = `Note updated: [${updatedNote.id}]: ${updatedNote.content} (complete: ${updatedNote.complete === '1' ? 'y' : 'n'})`;
+        const completeFlag = String(updatedNote.complete) === '1' ? 'y' : 'n';
+        p.textContent = `Note updated: [${updatedNote.id}]: ${updatedNote.content} (complete: ${completeFlag})`;
         resDiv.appendChild(p);
     }catch(err){
         const p = document.createElement('p');
