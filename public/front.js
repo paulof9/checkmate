@@ -11,7 +11,6 @@ export default function front() {
     const machine = 'machine';
     const prompt = `${username}@${machine}:$`;
 
-    // create initial prompt line with input
     createPromptLine();
 
     // CLEAR terminal
@@ -91,7 +90,6 @@ export default function front() {
             return;
         }
         
-        // add to history
         commandHistory.push(raw);
         historyIndex = -1;
         
@@ -99,14 +97,13 @@ export default function front() {
         input.disabled = true;
         input.className += ' opacity-70';
         
-        // execute command and wait for response
         await executeCommand(cmd, raw);
         
         // create new prompt line for next command
         createPromptLine();
     }
 
-    // click anywhere in terminal to focus on current input
+    // click anywhere to focus input
     resDiv.addEventListener('click', () => {
         const inputs = resDiv.querySelectorAll('input[type="text"]:not([disabled])');
         if (inputs.length > 0) {
@@ -114,7 +111,7 @@ export default function front() {
         }
     });
 
-    // execute command based on input
+    // COMMANDS
     async function executeCommand(cmd, raw) {
         if (cmd === "note list") {
             await showNotes();
