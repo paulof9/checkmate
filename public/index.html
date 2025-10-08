@@ -19,16 +19,15 @@
         </div>
 
         <div class="bg-slate-900 text-white p-6 font-mono text-sm leading-relaxed">
-            <!--req-->
-            <div class="flex flex-row">
-                <span class="text-cyan-400">user@machine</span><span class="text-slate-500">:</span><span class="text-slate-500">$</span> 
+            <!--req (hidden by JS)-->
+            <div class="flex flex-row"> 
                 <form id="form" class="ml-2" method="GET">
-                    <input class="h-5 text-cyan-400" name="input" id="input"></input>
+                    <input class="h-5 text-cyan-400" name="input" id="input" autocomplete="off"></input>
                 </form>
             </div>
 
-            <!--res-->
-            <div class="text-slate-300 h-40" id="resDiv">
+            <!--res (terminal console)-->
+            <div class="text-slate-300 h-[600px] overflow-y-auto p-4 bg-gray-900 text-white font-mono rounded-lg" id="resDiv">
                 <!--response here-->
             </div>
         </div>
