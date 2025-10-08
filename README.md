@@ -1,5 +1,7 @@
 ## This is an experimental study repo. 
 
+![ProjectView](https://imgur.com/a/uXJAMhQ)
+
 ## Endpoints (RESTful)
 - GET  /notes          — list notes
 - GET  /notes/:id      — get notes by id
