@@ -1,6 +1,6 @@
 ## This is an experimental study repo. 
 
-![ProjectView](https://imgur.com/a/uXJAMhQ)
+![image](https://i.imgur.com/M6ttWsy.png)
 
 ## Endpoints (RESTful)
 - GET  /notes          — list notes
